@@ -20,6 +20,8 @@ public class Server {
 		try {
 			this.serverSocket = new ServerSocket(25565);
 			this.clientReaders = new ArrayList<BufferedReader>();
+			
+			this.listen();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
