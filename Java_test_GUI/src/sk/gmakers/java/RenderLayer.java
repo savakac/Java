@@ -7,20 +7,19 @@ import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
 
-import sk.gmakers.java.entities.Enemy;
-import sk.gmakers.java.entities.Entity;
-import sk.gmakers.java.entities.Player;
+import sk.gmakers.java.entitis.Enemy;
+import sk.gmakers.java.entitis.Entity;
+import sk.gmakers.java.entitis.Player;
 
 public class RenderLayer extends Canvas implements Runnable {
-
 	private static final long serialVersionUID = 1L;
-	
+
 	private boolean isRunning;
-	
-	private ArrayList<Entity> entities;
-	private Player pl;
 	private boolean isGameOver;
 	private float score;
+	
+	private Player pl;
+	private ArrayList<Entity> entities; 
 	
 	public RenderLayer() {
 		super();
@@ -29,13 +28,15 @@ public class RenderLayer extends Canvas implements Runnable {
 		this.isGameOver = false;
 		this.score = 0;
 		this.setSize(new Dimension(800, 600));
-		
+		this.pl = new Player(this);
+		this.addMouseMotionListener(this.pl);
 		this.entities = new ArrayList<Entity>();
+		
 		for (int a = 0; a < 5; a++) {
 			this.entities.add(new Enemy(this));
 		}
 	}
-
+	
 	@Override
 	public void run() {
 		long lastTimeCycle = System.nanoTime();
@@ -59,6 +60,7 @@ public class RenderLayer extends Canvas implements Runnable {
 			try {
 				Thread.sleep(2);
 			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -67,13 +69,13 @@ public class RenderLayer extends Canvas implements Runnable {
 			
 			if (System.currentTimeMillis() - lastTimeOutput > 1000) {
 				lastTimeOutput += 1000;
-				score += 0.5;
 				System.out.println("Ticks: " + ticks + ", FPS: " + FPS);
+				this.score += 0.5;
 				FPS = 0;
 				ticks = 0;
 			}
+			
 		}
-		
 	}
 
 	private void render() {
@@ -88,37 +90,25 @@ public class RenderLayer extends Canvas implements Runnable {
 		g.setColor(Color.WHITE);
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
 		
-		g.setColor(Color.BLUE);
-		g.drawString("Your score: " + (int) this.score, 15, 15);
-		
-		for (Entity e : this.entities) {
+		for (Entity e : entities) {
 			e.render(g);
 		}
 		
-//		Tu nikde je chyba, treba pozriet a opravit
-//		this.pl.render(g);
+		pl.render(g);
 		
-		if (this.isGameOver) {
-			g.drawString("Game over", 300, 200);
-		}
+		g.setColor(Color.BLUE);
+		g.drawString("Your score: " + (int) this.score, 15, 15);
 		
 		g.dispose();
 		buffer.show();
 	}
 
+	
 	private void update() {
-		if (!this.isGameOver) {
-			for (Entity e : this.entities) {
-				e.update();
-			}
-//			pl.update();
+		for (Entity e : entities) {
+			e.update();
 		}
-		
-		int enemyCount = this.entities.size();
-		int additionalEnemies = (int) (this.score * 10 / 75);
-		if (additionalEnemies + 5 - enemyCount == 1) {
-			this.entities.add(new Enemy(this));
-		}
+		pl.update();
 	}
 	
 	public void start() {
@@ -128,16 +118,11 @@ public class RenderLayer extends Canvas implements Runnable {
 	}
 	
 	public void stop() {
-		isRunning = false;
-	}
-	
-	public ArrayList<Entity> getEntities() {
-		return this.entities;
+		
 	}
 	
 	public void gameOver() {
-		this.isGameOver = true;
-		this.removeMouseMotionListener(this.pl);
+		
 	}
 
 }
